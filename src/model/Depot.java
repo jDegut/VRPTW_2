@@ -37,4 +37,13 @@ public class Depot extends Vertex {
 	public int getDueTime() {
 		return dueTime;
 	}
+
+	/**
+	 * Get string representation (Did)
+	 * @return
+	 */
+	@Override
+	public String toString() {
+		return "Depot-" + id;
+	}
 }

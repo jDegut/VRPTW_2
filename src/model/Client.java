@@ -59,4 +59,13 @@ public class Client extends Vertex {
 	public int getServiceTime() {
 		return serviceTime;
 	}
+
+	/**
+	 * Get string representation (id)
+	 * @return
+	 */
+	@Override
+	public String toString() {
+		return String.valueOf(id);
+	}
 }

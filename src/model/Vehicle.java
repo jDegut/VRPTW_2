@@ -154,6 +154,7 @@ public class Vehicle {
 	 * @return true if the vehicle is valid, false otherwise
 	 */
 	public boolean isValid() {
+		this.valid = update();
 		return valid;
 	}
 

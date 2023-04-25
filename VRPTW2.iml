@@ -10,5 +10,6 @@
     <orderEntry type="library" name="graphstream.gs.algo" level="project" />
     <orderEntry type="library" name="openjfx.javafx.swing" level="project" />
     <orderEntry type="library" name="jfree.jfreechart" level="project" />
+    <orderEntry type="library" name="google.ortools.java" level="project" />
   </component>
 </module>

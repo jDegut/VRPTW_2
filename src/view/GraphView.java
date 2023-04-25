@@ -24,6 +24,7 @@ public class GraphView {
 		for(Vertex v : solution.getVertices()) {
 			org.graphstream.graph.Node n = graph.addNode(String.valueOf(v.getId()));
 			n.setAttribute("xy", v.getX(), v.getY());
+			if(v instanceof Client) n.setAttribute("ui.label", v.getId());
 			if(v instanceof Depot) n.setAttribute("ui.style", "fill-color: rgb(255, 0, 0);");
 		}
 		int i = 0;

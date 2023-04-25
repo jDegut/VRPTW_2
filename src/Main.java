@@ -1,6 +1,7 @@
 import algorithm.*;
 import data.Data;
 import model.Solution;
+import view.GraphView;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -19,7 +20,8 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
-		Data data = new Data("./Data/data101.vrp");
+		Data data = new Data("./Data/data01.vrp");
+		Linear.solve(data);
 		executeAlgorithm(data, Tabu.class);
 //		getOptimumForAData(data,10);
 
@@ -62,6 +64,7 @@ public class Main {
 	/**
 	 * Get the best optimum for a data file
 	 * @param data
+	 * @param nbIterations
 	 * @return optimum
 	 */
 	private static void getOptimumForAData(Data data, int nbIterations) {
@@ -79,6 +82,8 @@ public class Main {
 				.stream()
 				.min(Comparator.comparingDouble(Solution::getTotalDistance))
 				.orElseThrow(NoSuchElementException::new);
+		new GraphView(bestSolution);
+		bestSolution.getVehicles().forEach(v -> System.out.println(v.isValid()));
 		System.out.printf("\n--- Optimum with %d iterations ---\n", nbIterations);
 		System.out.println("cost : " + bestSolution.getTotalDistance() + " - nb vehicles : " + bestSolution.getVehicles().size());
 		System.out.println("Time : " + (new Date().getTime() - start.getTime()) + "ms");
