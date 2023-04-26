@@ -10,7 +10,7 @@ import view.GraphView;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Linear {
+public class RoutingSolver {
 
 	private static final int PRECISION_COEFF = 1000;
 
