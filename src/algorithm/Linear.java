@@ -2,17 +2,17 @@ package algorithm;
 
 import com.google.ortools.Loader;
 import com.google.ortools.constraintsolver.*;
+import com.google.protobuf.Duration;
 import data.Data;
-import model.Client;
-import model.Depot;
-import model.Vertex;
+import model.*;
+import view.GraphView;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Linear {
 
-	private static int PRECISION_COEFF = 1000;
+	private static final int PRECISION_COEFF = 1000;
 
 	record DataModel(
 			List<Vertex> vertices,
@@ -29,7 +29,7 @@ public class Linear {
 		List<Vertex> vertices = new ArrayList<>();
 		vertices.add(data.getDepot());
 		vertices.addAll(data.getClients());
-		int nbVehicles = 1;
+		int nbVehicles = 100;
 		int depotIndex = 0;
 		int capacityMax = data.getMaxQuantity();
 		long[] serviceTime = new long[vertices.size()];
@@ -45,7 +45,7 @@ public class Linear {
 				demands[i] = 0;
 			}
 			if(from instanceof Client client) {
-				serviceTime[i] = client.getServiceTime();
+				serviceTime[i] = (long) client.getServiceTime() * PRECISION_COEFF;
 				timeWindows[i][0] = (long) client.getReadyTime() * PRECISION_COEFF;
 				timeWindows[i][1] = (long) client.getDueTime() * PRECISION_COEFF;
 				demands[i] = client.getDemand();
@@ -69,40 +69,78 @@ public class Linear {
 		RoutingModel routing = new RoutingModel(manager);
 
 		final int transitCallbackIndex = routing.registerTransitCallback((long fromIndex, long toIndex) -> {
-					int fromNode = manager.indexToNode(fromIndex);
-					int toNode = manager.indexToNode(toIndex);
-					return dataModel.distances[fromNode][toNode];
+			int fromNode = manager.indexToNode(fromIndex);
+			int toNode = manager.indexToNode(toIndex);
+			return dataModel.serviceTime[fromNode] + dataModel.distances[fromNode][toNode];
 		});
+		final int demandCallbackIndex = routing.registerUnaryTransitCallback((long fromIndex) -> {
+			// Convert from routing variable Index to user NodeIndex.
+			int fromNode = manager.indexToNode(fromIndex);
+			return dataModel.demands[fromNode];
+		});
+
 		routing.setArcCostEvaluatorOfAllVehicles(transitCallbackIndex);
 
+		// Distance = time and maxTimePerVehicle is the due time of the depot
+		long maxTimePerVehicle = dataModel.timeWindows[0][1];
+		routing.addDimension(transitCallbackIndex, maxTimePerVehicle, maxTimePerVehicle,
+				false, // start cumul to zero
+				"Time");
+
+		routing.addDimension(demandCallbackIndex, 0, // null capacity slack
+				dataModel.capacityMax, // vehicle maximum capacities
+				true, // start cumul to zero
+				"Capacity");
+
+		RoutingDimension timeDimension = routing.getMutableDimension("Time");
+		// Add time window constraints for each location except depot.
+		for (int i = 1; i < dataModel.timeWindows.length; ++i) {
+			long index = manager.nodeToIndex(i);
+			timeDimension.cumulVar(index).setRange(dataModel.timeWindows[i][0], dataModel.timeWindows[i][1]);
+		}
+		// Add time window constraints for each vehicle start node.
+		for (int i = 0; i < dataModel.nbVehicles; ++i) {
+			long index = routing.start(i);
+			timeDimension.cumulVar(index).setRange(dataModel.timeWindows[0][0], dataModel.timeWindows[0][1]);
+		}
+		for (int i = 0; i < dataModel.nbVehicles; ++i) {
+			routing.addVariableMinimizedByFinalizer(timeDimension.cumulVar(routing.start(i)));
+			routing.addVariableMinimizedByFinalizer(timeDimension.cumulVar(routing.end(i)));
+		}
+
 		RoutingSearchParameters searchParameters = main.defaultRoutingSearchParameters()
-						.toBuilder()
-						.setFirstSolutionStrategy(FirstSolutionStrategy.Value.PATH_CHEAPEST_ARC)
-						.build();
+				.toBuilder()
+				.setFirstSolutionStrategy(FirstSolutionStrategy.Value.AUTOMATIC)
+				.setTimeLimit(Duration.newBuilder().setSeconds(10).build())
+				.build();
 
 		Assignment solution = routing.solveWithParameters(searchParameters);
 
-		printSolution(routing, manager, solution);
+		if(solution != null)
+			printSolution(data, dataModel, routing, manager, solution);
+		else
+			System.out.println("Can't find a solution");
 	}
 
-	static void printSolution(
-			RoutingModel routing, RoutingIndexManager manager, Assignment solution) {
-		// Solution cost.
-		System.out.println("Objective: " + solution.objectiveValue() / PRECISION_COEFF);
-		// Inspect solution.
-		System.out.println("Route:");
-		long routeDistance = 0;
-		StringBuilder route = new StringBuilder();
-		long index = routing.start(0);
-		while (!routing.isEnd(index)) {
-			route.append(manager.indexToNode(index)).append(" -> ");
-			long previousIndex = index;
-			index = solution.value(routing.nextVar(index));
-			routing.getArcCostForVehicle(previousIndex, index, 0);
+	static void printSolution(Data data, DataModel dataModel, RoutingModel routing, RoutingIndexManager manager, Assignment solution) {
+		List<Vehicle> vehicles = new ArrayList<>();
+		int nbVehicles = 0;
+		for (int i = 0; i < dataModel.nbVehicles; ++i) {
+			Vehicle v = new Vehicle((Depot) dataModel.vertices.get(dataModel.depotIndex), dataModel.capacityMax);
+			long index = routing.start(i);
+			while (!routing.isEnd(index)) {
+				int nodeIndex = manager.indexToNode(index);
+				if(nodeIndex != dataModel.depotIndex)
+					v.addClient((Client) dataModel.vertices.get(nodeIndex));
+				index = solution.value(routing.nextVar(index));
+			}
+			if(v.getClients().size() > 0) nbVehicles++;
+			vehicles.add(v);
 		}
-		route.append(manager.indexToNode(routing.end(0)));
-		System.out.println(route);
-		System.out.println("Route distance: " + routeDistance);
+		Solution s = new Solution(data, vehicles);
+		new GraphView(s);
+		System.out.println("Number of vehicles used : " + nbVehicles);
+		System.out.println("Total cost of the solution : " + s.getTotalDistance());
 	}
 
 }
