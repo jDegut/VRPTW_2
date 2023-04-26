@@ -20,9 +20,9 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
-		Data data = new Data("./Data/data01.vrp");
-		Linear.solve(data);
-		executeAlgorithm(data, Tabu.class);
+		Data data = new Data("./Data/data202.vrp");
+		LinearMP.solve(data);
+//		executeAlgorithm(data, Tabu.class);
 //		getOptimumForAData(data,10);
 
 	}
@@ -83,7 +83,6 @@ public class Main {
 				.min(Comparator.comparingDouble(Solution::getTotalDistance))
 				.orElseThrow(NoSuchElementException::new);
 		new GraphView(bestSolution);
-		bestSolution.getVehicles().forEach(v -> System.out.println(v.isValid()));
 		System.out.printf("\n--- Optimum with %d iterations ---\n", nbIterations);
 		System.out.println("cost : " + bestSolution.getTotalDistance() + " - nb vehicles : " + bestSolution.getVehicles().size());
 		System.out.println("Time : " + (new Date().getTime() - start.getTime()) + "ms");

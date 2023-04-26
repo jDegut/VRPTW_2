@@ -7,7 +7,7 @@ NB_CLIENTS: 16
 MAX_QUANTITY: 20000
 
 DATA_DEPOTS [idName x y readyTime dueTime]:
-d1 4 4 0 5
+d1 4 4 0 230
 
 DATA_CLIENTS [idName x y readyTime dueTime demand service]:
 c1 2 8 7 12 10 0

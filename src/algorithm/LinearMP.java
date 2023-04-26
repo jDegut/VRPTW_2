@@ -6,9 +6,8 @@ import com.google.ortools.linearsolver.MPObjective;
 import com.google.ortools.linearsolver.MPSolver;
 import com.google.ortools.linearsolver.MPVariable;
 import data.Data;
-import model.Client;
-import model.Depot;
-import model.Vertex;
+import model.*;
+import view.GraphView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,13 +29,13 @@ public class LinearMP {
 		List<Vertex> vertices = new ArrayList<>();
 		vertices.add(data.getDepot());
 		vertices.addAll(data.getClients());
-		int nbVehicles = 1;
+		int nbVehicles = 2;
 		int depotIndex = 0;
 		int capacityMax = data.getMaxQuantity();
-		double[] serviceTime = new double[vertices.size()];
-		double[][] distances = new double[vertices.size()][vertices.size()];
-		double[][] timeWindows = new double[vertices.size()][2];
-		double[] demands = new double[vertices.size()];
+		double[] serviceTime = new double[vertices.size()+1];
+		double[][] distances = new double[vertices.size()+1][vertices.size()+1];
+		double[][] timeWindows = new double[vertices.size()+1][2];
+		double[] demands = new double[vertices.size()+1];
 		for (int i = 0; i < vertices.size(); i++) {
 			Vertex from = vertices.get(i);
 			if(from instanceof Depot depot) {
@@ -55,7 +54,12 @@ public class LinearMP {
 				Vertex to = vertices.get(j);
 				distances[i][j] = from.getDistance(to);
 			}
+			distances[i][vertices.size()] = from.getDistance(vertices.get(depotIndex));
 		}
+		serviceTime[vertices.size()] = serviceTime[depotIndex];
+		distances[vertices.size()] = distances[depotIndex];
+		timeWindows[vertices.size()] = timeWindows[depotIndex];
+		demands[vertices.size()] = demands[depotIndex];
 		return new DataModel(vertices, distances, timeWindows, nbVehicles, depotIndex, demands, capacityMax, serviceTime);
 	}
 
@@ -96,20 +100,20 @@ public class LinearMP {
 		for(int k = 0; k < data.nbVehicles; k++) {
 			c0[k] = solver.makeConstraint(1, 1);
 			for(int i = 0; i < nbVertices; i++) {
-				if(i != data.depotIndex)
+				if(i != data.depotIndex && i != nbVertices-1)
 					c0[k].setCoefficient(x[0][i][k], 1);
 			}
 			c1[k] = solver.makeConstraint(1, 1);
 			for(int i = 0; i < nbVertices; i++) {
-				if(i != data.depotIndex)
-					c1[k].setCoefficient(x[i][0][k], 1);
+				if(i != data.depotIndex && i != nbVertices-1)
+					c1[k].setCoefficient(x[i][nbVertices-1][k], 1);
 			}
 		}
 
 		MPConstraint[][] c2 = new MPConstraint[data.nbVehicles][nbVertices];
 		for(int k = 0; k < data.nbVehicles; k++) {
 			for(int p = 0; p < nbVertices; p++) {
-				if(p != data.depotIndex) {
+				if(p != data.depotIndex && p != nbVertices-1) {
 					c2[k][p] = solver.makeConstraint(0, 0);
 					for(int i = 0; i < nbVertices; i++) {
 						if(i != p)
@@ -125,7 +129,7 @@ public class LinearMP {
 
 		MPConstraint[] c3 = new MPConstraint[nbVertices];
 		for(int i = 0; i < nbVertices; i++) {
-			if(i != data.depotIndex) {
+			if(i != data.depotIndex && i != nbVertices-1) {
 				c3[i] = solver.makeConstraint(1, 1);
 				for(int k = 0; k < data.nbVehicles; k++) {
 					for(int j = 0; j < nbVertices; j++) {
@@ -165,8 +169,8 @@ public class LinearMP {
 		// Fonction objective
 		MPObjective objective = solver.objective();
 		for (int k = 0; k < data.nbVehicles; k++) {
-			for (int i = 0; i < data.vertices.size(); i++) {
-				for (int j = 0; j < data.vertices.size(); j++) {
+			for (int i = 0; i < nbVertices; i++) {
+				for (int j = 0; j < nbVertices; j++) {
 					if (i != j) {
 						objective.setCoefficient(x[i][j][k], data.distances[i][j]);
 					}
@@ -181,17 +185,33 @@ public class LinearMP {
 
 		if (resultStatus == MPSolver.ResultStatus.OPTIMAL || resultStatus == MPSolver.ResultStatus.FEASIBLE) {
 			System.out.println("Solution trouvée:");
-
+			List<Vehicle> vehicles = new ArrayList<>();
 			for (int k = 0; k < data.nbVehicles; k++) {
+				Vehicle v = new Vehicle((Depot) data.vertices.get(data.depotIndex), data.capacityMax);
+				int index = data.depotIndex;
 				System.out.println("Véhicule " + (k + 1) + " :");
-				for (int i = 0; i < data.vertices.size(); i++) {
-					for (int j = 0; j < data.vertices.size(); j++) {
+				for (int i = 0; i < nbVertices; i++) {
+					for (int j = 0; j < nbVertices; j++) {
 						if (i != j && x[i][j][k].solutionValue() > 0.5) {
 							System.out.printf("  De %d vers %d\n", i, j);
 						}
 					}
 				}
+				while(index != nbVertices-1) {
+					for (int j = 0; j < nbVertices; j++) {
+						if (index != j && x[index][j][k].solutionValue() > 0.5) {
+							index = j;
+							if(j == nbVertices-1) break;
+							v.addClient((Client) data.vertices.get(j));
+							break;
+						}
+					}
+				}
+				vehicles.add(v);
 			}
+			Solution s = new Solution(dataFile, vehicles);
+			new GraphView(s);
+			System.out.println(s.getTotalDistance());
 
 			System.out.println("Coût total: " + objective.value());
 		} else {
