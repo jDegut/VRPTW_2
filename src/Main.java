@@ -20,9 +20,9 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 
-		Data data = new Data("./Data/data202.vrp");
-		LinearMP.solve(data);
-//		executeAlgorithm(data, Tabu.class);
+		Data data = new Data("./Data/data111.vrp");
+//		LinearMP.solve(data);
+		executeAlgorithm(data, Tabu.class);
 //		getOptimumForAData(data,10);
 
 	}
@@ -49,7 +49,7 @@ public class Main {
 			end = new Tabu(10, 1000, 100).search(solution, true);
 		} else if (algorithm.equals(SimulatedAnnealing.class)) {
 			System.out.println("SimulatedAnnealing algorithm found");
-			end = new SimulatedAnnealing(0.1, 1000, 0.9).search(solution);
+			end = new SimulatedAnnealing(0.1, 1000, 0.9).search(solution, true);
 		} else {
 			System.out.println("Algorithm not found");
 			return;

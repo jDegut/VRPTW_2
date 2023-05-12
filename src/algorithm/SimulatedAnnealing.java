@@ -52,7 +52,6 @@ public class SimulatedAnnealing extends VRPTW {
 					operator.execute(solution, randomNeighbor);
 					super.costs.add(solution.getTotalDistance());
 					bestSolution = solution.getTotalDistance() < bestSolution.getTotalDistance() ? solution.copy() : bestSolution;
-					if(dynamic) super.graphView.update(bestSolution);
 				}
 			}
 			temperature *= coolingRate;

@@ -120,7 +120,7 @@ public class Neighbor {
 					.map(String::valueOf)
 					.reduce((s1, s2) -> s1 + "/" + s2)
 					.orElse("");
-		return "[operator=" + operator + ", vehicles=" + routes + ", clients=" + clients + ", indexes=" + indexes + "]";
+		return "[operator=" + operator + ", vehicles=" + routes + "]";
 	}
 
 }

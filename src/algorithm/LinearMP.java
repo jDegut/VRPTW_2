@@ -10,6 +10,7 @@ import model.*;
 import view.GraphView;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class LinearMP {
@@ -29,7 +30,7 @@ public class LinearMP {
 		List<Vertex> vertices = new ArrayList<>();
 		vertices.add(data.getDepot());
 		vertices.addAll(data.getClients());
-		int nbVehicles = 2;
+		int nbVehicles = 1;
 		int depotIndex = 0;
 		int capacityMax = data.getMaxQuantity();
 		double[] serviceTime = new double[vertices.size()+1];
@@ -181,7 +182,9 @@ public class LinearMP {
 
 		System.out.println("Modèle créé");
 
+		Date start = new Date();
 		MPSolver.ResultStatus resultStatus = solver.solve();
+		Date end = new Date();
 
 		if (resultStatus == MPSolver.ResultStatus.OPTIMAL || resultStatus == MPSolver.ResultStatus.FEASIBLE) {
 			System.out.println("Solution trouvée:");
@@ -214,6 +217,7 @@ public class LinearMP {
 			System.out.println(s.getTotalDistance());
 
 			System.out.println("Coût total: " + objective.value());
+			System.out.println("Temps de calcul: " + (end.getTime() - start.getTime()) + "ms");
 		} else {
 			System.out.println("Aucune solution trouvée.");
 		}

@@ -59,7 +59,7 @@ public class Data {
 		if(build()) {
 			System.out.println("Data " + name + " loaded");
 		} else {
-			System.err.println("Error loading data");
+			throw new RuntimeException("Error loading data");
 		}
 	}
 
