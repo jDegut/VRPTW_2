@@ -52,40 +52,41 @@ The program is divided into several packages:
 
 - `algorithms` contains classes related to the different algorithms and methods required.
 - `data` contains classes for data retrieval from a file and data generation.
-- `entity` contains classes for the entities modeled in the VRPTW.
-- `graph` contains classes related to graph creation.
+- `model` contains classes for the entities modeled in the VRPTW.
+- `view` contains classes related to graph & view creation.
 
 
 ### Package algorithms
 
 - `operators` package : contains classes for each neighborhood operator (`Operator` is the abstract superclass for each operator).
-- `VRPTW` contains methods useful to algorithms and solver execution.
+- `HillClimbing` contains the descent algorithm.
+- `LinearMP` contains the linear MPSolver for the VRPTW.
 - `Randomizer` contains the algorithm for randomly applying a defined number of neighbors.
-- `HillClimber` contains the descent algorithm.
+- `RoutingSolver`contains the OR-Tools Solver using RoutingSolver interface.
 - `SimulatedAnnealing` contains the simulated annealing algorithm.
 - `Tabu` contains the tabu search algorithm.
+- `VRPTW` contains methods useful to algorithms and solver execution.
 
 ### Package data
 
-- `Data` contains methods for retrieving data from a .txt file.
-- `DataGenerated` contains methods for generating random data based on a desired number of clients.
+- `Data` contains methods for retrieving data from a .vrp file.
 
-### Package entity
+### Package model
 
 - `Client` contains all the information of a client and inherits from the `Vertex` class.
 - `Depot` contains all the information of a depot and inherits from the `Vertex` class.
 - `Neighbor` contains useful information for a created neighbor.
+- `Solution` contains all informations about a solution.
 - `Vehicle` contains all the information of a vehicle.
+- `Vertex` contains informations about a Vertex.
 
-### Package graph
+### Package view
 
-- `Edge` represents an edge of the graph.
-- `Route` represents a list of edges (and therefore a path).
-- `Solution` represents the total graph and therefore a set of routes.
-- `Vertex` represents a vertex of the graph.
+- `CostEvolutionView` represents methods to see the evolution of the cost of a solution.
+- `GraphView` represents methods to create and show a graph.
 
 Finally, the `src` package contains the `Main` class, which allows the solver to be launched.
 
 ## External libraries
 
-The program uses some external libraries for graph display called "GraphStream" & "JavaFX".
+The program uses some external libraries for graph display called "GraphStream", "JavaFX" and "JFreeChart". It also uses "ORTools" in order to use MPSolver interface.
