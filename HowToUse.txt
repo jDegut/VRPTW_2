@@ -10,3 +10,4 @@ Parameters :
 - TABU_LIST_SIZE : max number of elements in the tabu list
 - FINAL_TEMPERATURE : final temperature (Simulated Annealing)
 - COOLING_RATE : cooling rate (Simulated Annealing)
+- DYNAMIC : if true, graph and cost views are shown

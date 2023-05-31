@@ -23,6 +23,7 @@ public class Main {
 	private static final int TABU_LIST_SIZE = 10;
 	private static final double FINAL_TEMPERATURE = 0.01;
 	private static final double COOLING_RATE = 0.9;
+	private static final boolean DYNAMIC = true;
 
 	/**
 	 * TODO Algorithm to execute
@@ -56,13 +57,13 @@ public class Main {
 		Solution end;
 		if (CHOSEN_ALGORITHM.equals(Randomizer.class)) {
 			System.out.println("Randomizer algorithm found");
-			end = new Randomizer(MAX_ITERATIONS).search(solution, true);
+			end = new Randomizer(MAX_ITERATIONS).search(solution, DYNAMIC);
 		} else if (CHOSEN_ALGORITHM.equals(HillClimbing.class)) {
 			System.out.println("HillClimbing algorithm found");
-			end = new HillClimbing(MAX_NEIHGBORS).search(solution, true);
+			end = new HillClimbing(MAX_NEIHGBORS).search(solution, DYNAMIC);
 		} else if (CHOSEN_ALGORITHM.equals(Tabu.class)) {
 			System.out.println("Tabu algorithm found");
-			end = new Tabu(TABU_LIST_SIZE, MAX_ITERATIONS, MAX_NEIHGBORS).search(solution, true);
+			end = new Tabu(TABU_LIST_SIZE, MAX_ITERATIONS, MAX_NEIHGBORS).search(solution, DYNAMIC);
 		} else if (CHOSEN_ALGORITHM.equals(SimulatedAnnealing.class)) {
 			System.out.println("SimulatedAnnealing algorithm found");
 			end = new SimulatedAnnealing(FINAL_TEMPERATURE, MAX_ITERATIONS, COOLING_RATE).search(solution);
