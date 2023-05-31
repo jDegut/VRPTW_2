@@ -1,0 +1,12 @@
+How To Use :
+1) Modify parameters in the Main class
+2) Modify the algorithm (HillClimbing, Randomizer, SimulatedAnnealing, Tabu) in the Main class
+3) Comment/Decomment the method to execute in the main method
+4) Run the Main class
+
+Parameters :
+- MAX_ITERATIONS : max number of iterations (in total or per temperature)
+- MAX_NEIGHBORS : max number of neighbours to generate
+- TABU_LIST_SIZE : max number of elements in the tabu list
+- FINAL_TEMPERATURE : final temperature (Simulated Annealing)
+- COOLING_RATE : cooling rate (Simulated Annealing)
